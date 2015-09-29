@@ -40,13 +40,51 @@ var fps = 0;
 var fpsCount = 0;
 var fpsTime = 0;
 
-// load an image to draw
-var chuckNorris = document.createElement("img");
-chuckNorris.src = "hero.png";
+
+function initialize(input_level)
+{
+	var return_cells = [];
+	
+	for (var layerIdx = 0; layerIdx < LAYER_COUNT; layerIdx++)
+	{
+		return_cells[layerIdx] = [];
+		var idx = 0;
+		for(var y = 0; y < input_level.layers[layerIdx].height; y++)
+		{
+			return_cells[layerIdx][y] = [];
+			for(var x = 0; x < input_level.layers[layerIdx].width; x++)
+			{
+				if(input_level.layers[layerIdx].data[idx] != 0)
+				{
+					return_cells[layerIdx][y][x] = 1;
+					return_cells[layerIdx][y][x+1] = 1;
+					
+					if (y != 0)
+					{
+						return_cells[layerIdx][y-1][x] = 1;
+						return_cells[layerIdx][y-1][x+1] = 1;
+					}
+				}
+				else if(return_cells[layerIdx][y][x] != 1)
+				{
+					return_cells[layerIdx][y][x] = 0;
+				}
+				idx++;
+			}
+		}
+	}
+	return return_cells;
+} 
+
+var cells = initialize(level);
+
+
 
 var keyboard = new keyboard();
 var player = new player();
 
+var cam_x = 0;
+var cam_y = 0;
 
 function run()
 {
@@ -55,10 +93,24 @@ function run()
 	
 	var deltaTime = getDeltaTime();
 	
-	player.update(deltaTime);
-	player.draw();
+	cam_x = player.x - SCREEN_WIDTH/2;
+	cam_y = player.y - SCREEN_HEIGHT/2;
 	
-	drawMap();
+	if(cam_x < 0)
+		cam_x = 0;
+	if(cam_y < 0)
+		cam_y = 0;
+	
+	if(cam_x > MAP.tw * TILE - SCREEN_WIDTH)
+		cam_x > MAP.tw * TILE - SCREEN_WIDTH;
+	if(cam_y > MAP.th * TILE - SCREEN_HEIGHT)
+		cam_y > MAP.th * TILE - SCREEN_HEIGHT;
+	
+	drawMap(cam_x, cam_y);
+
+	player.update(deltaTime);
+	player.draw(cam_x, cam_y);
+	
 	
 	
 	// update the frame counter 
