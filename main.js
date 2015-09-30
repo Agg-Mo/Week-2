@@ -4,6 +4,14 @@ var context = canvas.getContext("2d");
 var startFrameMillis = Date.now();
 var endFrameMillis = Date.now();
 
+function lerp(value, min , max)
+{
+	return value * min + value * max
+}
+
+
+
+
 // This function will return the time in seconds since the function 
 // was last called
 // You should only call this function once per frame
@@ -88,45 +96,52 @@ var cam_y = 0;
 
 function run()
 {
-	context.fillStyle = "#ccc";		
+	context.fillStyle = "#069fff";		
 	context.fillRect(0, 0, canvas.width, canvas.height);
 	
 	var deltaTime = getDeltaTime();
 	
-	cam_x = player.x - SCREEN_WIDTH/2;
-	cam_y = player.y - SCREEN_HEIGHT/2;
+	var wanted_cam_x;
+	var wanted_cam_y;
 	
-	if(cam_x < 0)
-		cam_x = 0;
-	if(cam_y < 0)
-		cam_y = 0;
+	wanted_cam_x = player.x - SCREEN_WIDTH/2;
+	wanted_cam_y = player.y - SCREEN_HEIGHT/2;
 	
-	if(cam_x > MAP.tw * TILE - SCREEN_WIDTH)
-		cam_x > MAP.tw * TILE - SCREEN_WIDTH;
-	if(cam_y > MAP.th * TILE - SCREEN_HEIGHT)
-		cam_y > MAP.th * TILE - SCREEN_HEIGHT;
+	if(wanted_cam_x < 0)
+		wanted_cam_x = 0;
+	if(wanted_cam_y < 0)
+		wanted_cam_y = 0;
+	
+	if(wanted_cam_x > MAP.tw * TILE - SCREEN_WIDTH)
+		wanted_cam_x = MAP.tw * TILE - SCREEN_WIDTH;
+	if(wanted_cam_y > MAP.th * TILE - SCREEN_HEIGHT)
+		wanted_cam_y = MAP.th * TILE - SCREEN_HEIGHT;
+	
+	cam_x = Math.floor(lerp(0.5, cam_x, wanted_cam_x));
+	cam_y = Math.floor(lerp(0.5, cam_y, wanted_cam_y))
 	
 	drawMap(cam_x, cam_y);
 
 	player.update(deltaTime);
 	player.draw(cam_x, cam_y);
 	
-	
+	if (player.x < canvas.height)
+		player.LIVES == player.LIVES - 1
 	
 	// update the frame counter 
-	fpsTime += deltaTime;
-	fpsCount++;
-	if(fpsTime >= 1)
-	{
-		fpsTime -= 1;
-		fps = fpsCount;
-		fpsCount = 0;
-	}		
-		
+	//fpsTime += deltaTime;
+	//fpsCount++;
+	//if(fpsTime >= 1)
+	//{
+	//	fpsTime -= 1;
+	//	fps = fpsCount;
+	//	fpsCount = 0;
+	//}		
+	//	
 	// draw the FPS
-	context.fillStyle = "#f00";
-	context.font="14px Arial";
-	context.fillText("FPS: " + fps, 5, 20, 100);
+	//context.fillStyle = "#f00";
+	//context.font="14px Arial";
+	//context.fillText("FPS: " + fps, 5, 20, 100);
 }
 
 
