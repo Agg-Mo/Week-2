@@ -10,7 +10,7 @@ var Frame = function(x, y, width, height, duration){
 var Sprite = function(filename) {
 	if(filename != null)
 	{
-		this.image = document.createElement("img");
+		this.image = document.createElement("img");						//jump + shoot needs fixing
 		this.image.src = filename;
 	}
 	

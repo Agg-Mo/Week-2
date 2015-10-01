@@ -28,8 +28,8 @@ Bullet.prototype.update = function(deltaTime)
 {
 	if(!this.isDead)
 	{
-		this.x += this.vel_x *deltaTime * BULLET_SPEED;
-		this.y += this.vel_y *deltaTime * BULLET_SPEED;
+		this.x += this.vel_x * deltaTime * BULLET_SPEED;
+		this.y += this.vel_y * deltaTime * BULLET_SPEED;
 		
 		if(this.x < 0 || this.x > MAP.tw * TILE || 
 		   this.y < 0 || this.x > MAP.th* TILE)

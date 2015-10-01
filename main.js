@@ -40,6 +40,14 @@ function getDeltaTime()
 var SCREEN_WIDTH = canvas.width;
 var SCREEN_HEIGHT = canvas.height;
 
+var background_sound = new Howl(
+{
+	urls: ["background.ogg"],
+	loop: true,
+	buffer: true,
+	volume: 0.5,
+});
+//background_sound.play(); //***********************
 
 // some variables to calculate the Frames Per Second (FPS - this tells use
 // how fast our game is running, and allows us to make the game run at a 
@@ -94,6 +102,10 @@ var player = new player();
 var cam_x = 0;
 var cam_y = 0;
 
+//var example_emitter = new Emitter();
+//
+//example_emitter.Initialise(200, 200, 1, 0, 3000, 0.5, 50, 0.5, true)
+
 function run()
 {
 	context.fillStyle = "#069fff";		
@@ -124,6 +136,11 @@ function run()
 
 	player.update(deltaTime);
 	player.draw(cam_x, cam_y);
+	
+	//example_emitter.update(deltaTime)			//Emitter
+	//example_emitter.draw(cam_x, cam_y)
+	
+	
 	
 	if (player.x < canvas.height)
 		player.LIVES == player.LIVES - 1

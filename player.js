@@ -48,7 +48,7 @@ var player = function ()
 	
 	//shoot left **
 	this.sprite.buildAnimation(12, 8, 165 , 126, 0.05,
-								[28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]);
+								[92, 91, 90, 89, 88, 87, 86, 85, 84, 83, 82, 81, 80, 79]);
 	//shoot right **
 	this.sprite.buildAnimation(12, 8, 165 , 126, 0.05,
 								[79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92]);
@@ -86,7 +86,29 @@ var player = function ()
 		this.bullets[idx] = new Bullet();
 	}
 	this.shoot_cooldown = 0.0;
-	this.shoot_timer = 0.1;
+	this.shoot_timer = 0.01;
+
+	
+		this.jump_sfx= new Howl(
+		{
+			urls: ["hup.wav"],
+			buffer: true,
+			volume: 1,
+			onened: function(){
+				self.is_jump_sfx_playing = false;
+			}
+		});
+	
+	
+	this.is_shoot_sfx_playing = false;
+	this.shoot_sfx = new Howl({
+		urls: ["click.wav"],
+		buffer: true,
+		volume: 1,
+		onend: function(){
+			self.is_shooting_sfx_playing = false;
+		}
+	});
 } 
 
 player.prototype.update = function(deltaTime)
@@ -136,9 +158,9 @@ player.prototype.update = function(deltaTime)
 	
 	if (keyboard.isKeyDown(keyboard.KEY_SHIFT)) //**
 	{
-			if(this.sprite.currentAnimation == ANIM_WALK_LEFT && !this.jumping)
+			if(this.sprite.currentAnimation == ANIM_WALK_LEFT && !this.jumping && !this.ANIM_IDLE_LEFT)
 				this.sprite.setAnimation(ANIM_SHOOT_LEFT);
-			if(this.sprite.currentAnimation == ANIM_WALK_RIGHT && !this.jumping)
+			if(this.sprite.currentAnimation == ANIM_WALK_RIGHT && !this.jumping && !this.ANIM_IDLE_RIGHT)
 				this.sprite.setAnimation(ANIM_SHOOT_RIGHT);
 				
 				this.shoot = true;
@@ -149,24 +171,56 @@ player.prototype.update = function(deltaTime)
 	}	
 	if(keyboard.isKeyDown(keyboard.KEY_SHIFT))
 	{
+		if(this.sprite.currentAnimation == ANIM_SHOOT_LEFT)
+		{
+						
+		}
 		if(this.shoot_cooldown <= 0)
 		{
-			var jitter = Math.random * 0.2 - 0.1
+			this.shoot_sfx.play();
+			this.is_shoot_sfx_playing = true;
 			
+			var jitter = Math.random() * 0.2 - 0.1
+		
 			if(this.direction == LEFT)
-				this.bullets[this.cur_bullet_index].fire(this.x, this.y, -1, jitter); //bullets
+				this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
 			else
-				this.bullets[this.cur_bullet_index].fire(this.x, this.y, +1, jitter);
+				this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
 			
 			this.shoot_cooldown = this.shoot_timer;
 			
-			this.cur_bullet_index++;
+			this.cur_bullet_index ++;
 			if(this.cur_bullet_index >= this.max_bullets)
 				this.cur_bullet_index = 0;
 		}
+		
 	}
+	//if(keyboard.isKeyDown(keyboard.KEY_SHIFT))
+	//{
+	//	if(this.sprite.currentAnimation == ANIM_SHOOT_RIGHT)
+	//	{
+	//		if(this.shoot_cooldown <= 0)
+	//		{
+	//			
+	//			this.shoot_sfx.play();
+	//			this.is_shoot_sfx_playing = true;
+	//			
+	//			var jitter = Math.random * 0.2 - 0.1
+	//		
+
+	//			
+	//			
+	//			this.shoot_cooldown = this.shoot_timer;
+	//			
+	//			this.cur_bullet_index ++;
+	//			if(this.cur_bullet_index >= this.max_bullets)
+	//				this.cur_bullet_index = 0;
+	//		}
+	//	}
+	//}
+	
 	if(this.shoot_cooldown > 0)
-		this.shoot_cooldown -= deltaTime
+		this.shoot_cooldown -= deltaTime;
 	
 	for (var i = 0; i < this.max_bullets; i++)
 	{
@@ -180,17 +234,20 @@ player.prototype.update = function(deltaTime)
 	var ddy = GRAVITY;
 	
 	if(left)
-		ddx = ddx - ACCEL
+		ddx = ddx - ACCEL;
 	else if (wasleft)
-		ddx = ddx + FRICTION
+		ddx = ddx + FRICTION;
 	
 	if(right)
-		ddx = ddx + ACCEL
+		ddx = ddx + ACCEL;
 	else if (wasright)
-		ddx = ddx - FRICTION
+		ddx = ddx - FRICTION;
 	
 	if(jump && !this.jumping && !falling)
 	{
+		this.jump_sfx.play();
+		this.is_jump_sfx_playing = true;
+		
 		ddy = ddy - JUMP;
 		this.jumping = true;
 		if(this.direction == LEFT)
@@ -209,10 +266,10 @@ player.prototype.update = function(deltaTime)
 	
 	this.x = Math.floor(this.x +(deltaTime * this.velocity_x));
 	this.y = Math.floor(this.y +(deltaTime * this.velocity_y));
-	this.velocity_x = bound(this.velocity_x + (deltaTime * ddx), -MAXDY, MAXDX)
+	this.velocity_x = bound(this.velocity_x + (deltaTime * ddx), -MAXDX, MAXDX)
 	this.velocity_y = bound(this.velocity_y + (deltaTime * ddy), -MAXDY, MAXDY)	
 	
-		if ((wasleft &&(this.velocity_x > 0)) || 
+	if ((wasleft &&(this.velocity_x > 0)) || 
 		(wasright && (this.velocity_x < 0)))
 	{
 		this.velocity_x = 0;
@@ -293,6 +350,6 @@ player.prototype.draw = function(_cam_x, _cam_y)
 	
 	for(var idx = 0; idx < this.max_bullets; idx++)
 	{
-		this.bullets[idx]//halp
+		this.bullets[idx].draw(_cam_x, _cam_y);
 	}
 }
