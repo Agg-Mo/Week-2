@@ -1,7 +1,7 @@
 var METER = TILE;
 
 var GRAVITY = METER * 9.8 * 3;
-														// fix the bottom!!
+
 var MAXDX = METER * 10;
 var MAXDY = METER * 15;
 
@@ -77,7 +77,8 @@ var player = function ()
 	this.respawn_x = this.x;
 	this.respawn_y = this.y;
 	
-
+	this.progress = 0;
+	
 	this.max_bullets = 50;
 	this.bullets = [];
 	this.cur_bullet_index = 0;
@@ -89,24 +90,35 @@ var player = function ()
 	this.shoot_timer = 0.01;
 
 	
-		this.jump_sfx= new Howl(
-		{
-			urls: ["hup.wav"],
-			buffer: true,
-			volume: 1,
-			onened: function(){
-				self.is_jump_sfx_playing = false;
-			}
-		});
+	this.jump_sfx= new Howl(
+	{
+		urls: ["hup.wav"],
+		buffer: true,
+		volume: 1,
+		onend: function(){
+			self.is_jump_sfx_playing = false;
+		}
+	});
 	
 	
 	this.is_shoot_sfx_playing = false;
 	this.shoot_sfx = new Howl({
-		urls: ["click.wav"],
+		urls: ["click.mp3"],
 		buffer: true,
 		volume: 1,
 		onend: function(){
 			self.is_shooting_sfx_playing = false;
+		}
+	});
+	
+	
+	this.hurt_sfx = new Howl(
+	{
+		urls: ["hurt.wav"],
+		buffer: true,
+		volume: 1,
+		onend: function(){
+			self.is_hurt_sfx_playing = false;
 		}
 	});
 } 
@@ -173,27 +185,46 @@ player.prototype.update = function(deltaTime)
 	{
 		if(this.sprite.currentAnimation == ANIM_SHOOT_LEFT)
 		{
-						
+			if(this.shoot_cooldown <= 0)
+			{
+				this.shoot_sfx.play();
+				this.is_shoot_sfx_playing = true;
+				
+				var jitter = Math.random() * 0.2 - 0.1
+			
+				if(this.direction == LEFT)
+					this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
+				else
+					this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
+				
+				this.shoot_cooldown = this.shoot_timer;
+				
+				this.cur_bullet_index ++;
+				if(this.cur_bullet_index >= this.max_bullets)
+					this.cur_bullet_index = 0;
+			}
 		}
-		if(this.shoot_cooldown <= 0)
+		if(this.sprite.currentAnimation == ANIM_SHOOT_RIGHT)
 		{
-			this.shoot_sfx.play();
-			this.is_shoot_sfx_playing = true;
+			if(this.shoot_cooldown <= 0)
+			{
+				this.shoot_sfx.play();
+				this.is_shoot_sfx_playing = true;
+				
+				var jitter = Math.random() * 0.2 - 0.1
 			
-			var jitter = Math.random() * 0.2 - 0.1
-		
-			if(this.direction == LEFT)
-				this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
-			else
-				this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
-			
-			this.shoot_cooldown = this.shoot_timer;
-			
-			this.cur_bullet_index ++;
-			if(this.cur_bullet_index >= this.max_bullets)
-				this.cur_bullet_index = 0;
+				if(this.direction == RIGHT)
+					this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
+				else
+					this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
+				
+				this.shoot_cooldown = this.shoot_timer;
+				
+				this.cur_bullet_index ++;
+				if(this.cur_bullet_index >= this.max_bullets)
+					this.cur_bullet_index = 0;
+			}
 		}
-		
 	}
 	//if(keyboard.isKeyDown(keyboard.KEY_SHIFT))
 	//{
@@ -253,12 +284,12 @@ player.prototype.update = function(deltaTime)
 		if(this.direction == LEFT)
 		{
 			if(this.sprite.currentAnimation != ANIM_JUMP_LEFT)
-				this.sprite.currentAnimation = ANIM_JUMP_LEFT;
+				this.sprite.setAnimation(ANIM_JUMP_LEFT);
 		}
 		else
 		{
 			if(this.sprite.currentAnimation != ANIM_JUMP_RIGHT)
-				this.sprite.currentAnimation = ANIM_JUMP_RIGHT;
+				this.sprite.setAnimation(ANIM_JUMP_RIGHT);
 		}
 	}
 	
@@ -327,26 +358,103 @@ player.prototype.update = function(deltaTime)
 	
 	if(this.y > MAP.th * TILE + 100)
 	{
-		this.x = this.respawn_x;
-		this.y = this.respawn_y;
-		this.lives --;
-	
+		if(this.lives > 0)
+		{	
+			this.hurt_sfx.play();
+			this.is_hurt_sfx_playing = true;
+			
+			this.x = this.respawn_x;
+			this.y = this.respawn_y;
+			this.lives --;
+		}
+		if(this.lives == 0)
+		{
+			gameState = STATE_GAMEOVER;
+			return;
+		}
 	}
 	
+	if(this.x > 15 * (MAP.tw/16) * TILE && this.y > 3 * (MAP.th/4)*TILE)
+	{
+		gameState = STATE_GAMEWIN;
+		return;
+	}
+	
+	//furthest example
+
+	if(this.x > 15 * (MAP.tw/16) * TILE )
+	{
+		this.progress = 4;
+	}
+	else if(this.x > 3 *(MAP.tw / 4) * TILE && this.x < MAP.tw * TILE)
+	{
+		this.progress = 3;
+	}
+	else if(this.x > 2 * (MAP.tw / 4) * TILE && this.x < 3 * (MAP.tw / 4) * TILE)
+	{
+		this.progress = 2;
+	}
+	else if(this.x > 1 * (MAP.tw / 4) * TILE && this.x < 2 * (MAP.tw / 4) * TILE)
+	{
+		this.progress = 1;
+	}
+
+	
+
+		this.progressBar_empty = document.createElement("img");
+		this.progressBar_empty.src = "progress1.png";
+		
+		this.progressBar_quarter = document.createElement("img");
+		this.progressBar_quarter.src = "progress_quarter.png";
+		
+		this.progressBar_half = document.createElement("img");
+		this.progressBar_half.src = "progress_half.png";
+		
+		this.progressBar_threeQuarter = document.createElement("img");
+		this.progressBar_threeQuarter.src = "progress_3quarter.png";
+		
+		this.progressBar_full = document.createElement("img");
+		this.progressBar_full.src = "progress_full.png";
+		
 		this.lives_image = document.createElement("img");
 		this.lives_image.src = "Bowie.png";
-	
+
+
+			
 }
 
 player.prototype.draw = function(_cam_x, _cam_y)
 {
 	this.sprite.draw(context, this.x - _cam_x
 							, this.y - _cam_y);
-							
-	for(var idx = 0; idx < this.lives; idx++)
+			
+	for (var idx = 0; idx < this.lives; idx++)
 	{
 		context.drawImage(this.lives_image, 20 + idx * (this.lives_image.width), 20);
 	}
+	
+	
+	if(this.progress == 0)
+	{
+		context.drawImage(this.progressBar_empty,10,440)
+	}
+	else if(this.progress == 1)
+	{
+		context.drawImage(this.progressBar_quarter,10,440)
+	}
+	else if(this.progress == 2)
+	{
+		context.drawImage(this.progressBar_half,10,440)
+	}
+	else if(this.progress == 3)
+	{
+		context.drawImage(this.progressBar_threeQuarter,10,440)
+	}
+	else if(this.progress == 4)
+	{
+		context.drawImage(this.progressBar_full,10,440)
+	}
+	
 	
 	for(var idx = 0; idx < this.max_bullets; idx++)
 	{

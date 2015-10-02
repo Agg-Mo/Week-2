@@ -1,4 +1,4 @@
-var BULLET_SPEED = 2000;
+var BULLET_SPEED = 1000;
 
 var Bullet = function()
 {
@@ -32,7 +32,7 @@ Bullet.prototype.update = function(deltaTime)
 		this.y += this.vel_y * deltaTime * BULLET_SPEED;
 		
 		if(this.x < 0 || this.x > MAP.tw * TILE || 
-		   this.y < 0 || this.x > MAP.th* TILE)
+		   this.y < 0 || this.y > MAP.th* TILE)
 		   {
 			   this.isDead = true;
 		   }
