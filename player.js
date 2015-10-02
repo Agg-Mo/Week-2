@@ -193,9 +193,9 @@ player.prototype.update = function(deltaTime)
 				var jitter = Math.random() * 0.2 - 0.1
 			
 				if(this.direction == LEFT)
-					this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
+					this.bullets[this.cur_bullet_index].fire(this.x +70, this.y - 10, 1, jitter);
 				else
-					this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
+					this.bullets[this.cur_bullet_index].fire(this.x + 70, this.y - 10, 1, jitter);
 				
 				this.shoot_cooldown = this.shoot_timer;
 				
@@ -214,9 +214,9 @@ player.prototype.update = function(deltaTime)
 				var jitter = Math.random() * 0.2 - 0.1
 			
 				if(this.direction == RIGHT)
-					this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
+					this.bullets[this.cur_bullet_index].fire(this.x + 70, this.y - 10, 1, jitter);
 				else
-					this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
+					this.bullets[this.cur_bullet_index].fire(this.x + 70, this.y - 10, 1, jitter);
 				
 				this.shoot_cooldown = this.shoot_timer;
 				
