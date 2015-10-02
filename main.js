@@ -177,7 +177,7 @@ var background_sound = new Howl(
 	buffer: true,
 	volume: 0.5,
 });
-//background_sound.play(); //***********************
+background_sound.play();
 
 // some variables to calculate the Frames Per Second (FPS - this tells use
 // how fast our game is running, and allows us to make the game run at a 
